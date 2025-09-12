@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Image Remix AI Chat</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="chat-header">
+      <h3>Image Remix AI</h3>
+      <div id="status" class="status"></div>
+    </div>
+
+    <div id="chatContainer" class="chat-container">
+      <div id="noImageMessage" class="message system-message">
+        <div class="message-content">
+          <p>👋 Welcome! Hover over any image on the page and click "Remix" to start chatting with AI about image editing.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-container">
+        <textarea id="prompt" placeholder="Describe how to remix this image..." rows="2"></textarea>
+        <button id="generateBtn" class="send-btn">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
