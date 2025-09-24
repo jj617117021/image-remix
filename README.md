@@ -1,16 +1,8 @@
 # Image Remix AI - Secure Chrome Extension
 
-A secure Chrome extension that allows users to remix images using AI. This version implements proper security measures including server-side API key management, rate limiting, and input validation.
+A product that allows users to remix images using AI.
 
-## Security Features
 
-- ✅ **Server-side API key management** - API keys are never exposed to the client
-- ✅ **Rate limiting** - Prevents API abuse with both client and server-side limits
-- ✅ **Input validation** - Sanitizes and validates all user inputs
-- ✅ **Error handling** - Secure error messages that don't expose sensitive information
-- ✅ **CORS protection** - Properly configured cross-origin resource sharing
-- ✅ **Request timeouts** - Prevents hanging requests
-- ✅ **Minimal permissions** - Only requests necessary Chrome extension permissions
 
 ## Setup Instructions
 

@@ -8,18 +8,33 @@
       "maxDuration": 10
     }
   },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/generate-image",
-      "dest": "/api/generate-image.js"
+      "source": "/health",
+      "destination": "/api/health.js"
     },
     {
-      "src": "/health",
-      "dest": "/api/health.js"
-    },
+      "source": "/",
+      "destination": "/api/health.js"
+    }
+  ],
+  "headers": [
     {
-      "src": "/(.*)",
-      "dest": "/api/health.js"
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
     }
   ]
 }

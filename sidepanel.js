@@ -1,7 +1,10 @@
-// popup.js
+// sidepanel.js
 document.addEventListener('DOMContentLoaded', async () => {
     const chatContainer = document.getElementById('chatContainer');
     const noImageMessage = document.getElementById('noImageMessage');
+    const selectedImageContainer = document.getElementById('selectedImageContainer');
+    const selectedImage = document.getElementById('selectedImage');
+    const clearImageBtn = document.getElementById('clearImageBtn');
     const promptEl = document.getElementById('prompt');
     const generateBtn = document.getElementById('generateBtn');
     const status = document.getElementById('status');
@@ -21,11 +24,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       // Show welcome message
       noImageMessage.style.display = 'block';
+      selectedImageContainer.style.display = 'none';
       
       // Reset input
       promptEl.value = '';
-      promptEl.placeholder = 'Describe how to remix this image...';
-      generateBtn.textContent = 'Send';
+      promptEl.placeholder = '✨ Describe how to remix this image...';
+      generateBtn.textContent = '🚀 Send';
       generateBtn.disabled = true;
       
       // Clear status
@@ -109,6 +113,39 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
+    // Show selected image
+    function showSelectedImage(imageData) {
+      currentImage = imageData;
+      selectedImage.src = imageData.src;
+      selectedImage.alt = imageData.alt || 'Selected image';
+      selectedImageContainer.style.display = 'block';
+      noImageMessage.style.display = 'none';
+      
+      // Clear conversation history when new image is selected
+      conversationHistory = [];
+      const messages = chatContainer.querySelectorAll('.message:not(.system-message)');
+      messages.forEach(msg => msg.remove());
+      
+      // Update UI
+      promptEl.placeholder = '✨ Tell me how to remix...';
+      generateBtn.disabled = false;
+      
+      // Clear any existing status
+      status.textContent = '';
+    }
+
+    // Clear selected image
+    function clearSelectedImage() {
+      currentImage = null;
+      selectedImageContainer.style.display = 'none';
+      noImageMessage.style.display = 'block';
+      promptEl.placeholder = '✨ Describe how to remix this image...';
+      generateBtn.disabled = true;
+      
+      // Clear conversation
+      initializeChat();
+    }
+
     // Initialize chat on load
     initializeChat();
 
@@ -116,35 +153,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     const kv = await chrome.storage.local.get('selectedImage');
     const sel = kv.selectedImage;
     if (sel && sel.src) {
-      currentImage = sel;
-      noImageMessage.style.display = 'none';
-      
-      // Show the selected image
-      const imageMessage = document.createElement('div');
-      imageMessage.className = 'message user-message';
-      const contentDiv = document.createElement('div');
-      contentDiv.className = 'message-content';
-      const img = document.createElement('img');
-      img.src = sel.src;
-      img.alt = sel.alt || 'Selected image';
-      contentDiv.appendChild(img);
-      imageMessage.appendChild(contentDiv);
-      chatContainer.appendChild(imageMessage);
-      
-      // Scroll to bottom after adding the image
-      setTimeout(() => {
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-      }, 10);
-      
-      // Update UI
-      promptEl.placeholder = '✨ Tell me how to remix...';
-      generateBtn.disabled = false;
+      showSelectedImage(sel);
       
       // Clear storage
       chrome.storage.local.remove('selectedImage');
     }
 
-    // Clean up when popup is closed
+    // Listen for new image selections from context menu
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (message.type === 'image-selected') {
+        const payload = message.payload;
+        showSelectedImage(payload);
+        sendResponse({ ok: true });
+        return true; // Indicates we will send a response asynchronously
+      }
+    });
+
+    // Handle clear image button
+    clearImageBtn.addEventListener('click', clearSelectedImage);
+
+    // Clean up when side panel is closed
     window.addEventListener('beforeunload', () => {
       chrome.storage.local.remove('selectedImage');
     });
@@ -207,6 +235,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             alt: 'Generated image'
           };
           
+          // Update the selected image display
+          showSelectedImage(currentImage);
+          
           // Add to conversation history
           conversationHistory.push({ role: 'assistant', content: 'Generated image', image: result.b64 });
         } else if (result?.text) {
@@ -236,8 +267,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         generateBtn.click();
       }
     });
-
-    // Keep textarea at fixed height - no auto-resize
 
     // Handle focus and blur for placeholder
     promptEl.addEventListener('focus', () => {
@@ -273,4 +302,3 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
   });
-  

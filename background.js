@@ -2,7 +2,7 @@
 
 // Import configuration
 const CONFIG = {
-  SERVER_URL: 'http://localhost:3000',
+  SERVER_URL: 'https://image-remix-ai.vercel.app',
   ENDPOINTS: {
     GENERATE_IMAGE: '/api/generate-image',
     HEALTH_CHECK: '/health'
@@ -11,6 +11,46 @@ const CONFIG = {
     API_REQUEST: 30000
   }
 };
+
+// Set up side panel behavior
+chrome.sidePanel
+  .setPanelBehavior({ openPanelOnActionClick: true })
+  .catch((error) => console.error('Error setting side panel behavior:', error));
+
+// Create context menu on installation
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.contextMenus.create({
+    id: "open-side-panel",
+    title: "Remix'em!",
+    contexts: ["image"], // Only show on images
+  });
+});
+
+// Handle context menu clicks
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === "open-side-panel") {
+    // Extract image data from the context menu
+    const imageData = {
+      src: info.srcUrl,
+      alt: info.altText || 'Selected image'
+    };
+    
+    // Store the selected image
+    chrome.storage.local.set({ 'selectedImage': imageData }, () => {
+      // Open the side panel
+      chrome.sidePanel.open({ tabId: tab.id });
+      
+      // Send message to side panel to update the image immediately
+      chrome.runtime.sendMessage({
+        type: 'image-selected',
+        payload: imageData
+      }).catch(() => {
+        // Ignore errors if side panel is not open yet
+        // The side panel will load the image from storage when it opens
+      });
+    });
+  }
+});
 
 // Rate limiting storage
 let requestCount = 0;

@@ -52,9 +52,9 @@ module.exports = async (req, res) => {
     // Validate request
     const { prompt, imageDataBase64, conversationHistory } = validateRequest(req.body);
     
-    // Get the model
+    // Get the model - use the correct image generation model
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.0-flash-exp"
+      model: "models/gemini-2.5-flash-image-preview"
     });
     
     // Build conversation context
@@ -96,7 +96,7 @@ module.exports = async (req, res) => {
       contents.push({
         role: 'user',
         parts: [
-          { text: `Create an image: ${prompt}. Generate the image now.` }
+          { text: `Please create a digital artwork based on: ${prompt}. Generate an image that represents this concept.` }
         ]
       });
     }
@@ -118,19 +118,26 @@ module.exports = async (req, res) => {
     const response = await result.response;
     const parts = response.candidates?.[0]?.content?.parts || [];
     
+    console.log('Response parts count:', parts.length);
+    console.log('Response structure:', JSON.stringify(parts, null, 2));
+    
     let b64 = null;
     let textResponse = null;
     
     for (const part of parts) {
+      console.log('Processing part:', Object.keys(part));
       if (part.inline_data?.data || part.inlineData?.data) {
         b64 = part.inline_data?.data || part.inlineData?.data;
+        console.log('Found image data, length:', b64 ? b64.length : 0);
         break;
       } else if (part.text) {
         textResponse = part.text;
+        console.log('Found text response:', textResponse.substring(0, 100));
       }
     }
     
     if (!b64 && textResponse) {
+      console.log('No image data found, returning text response');
       return res.json({ 
         text: textResponse, 
         error: 'API returned text instead of image' 
@@ -138,6 +145,7 @@ module.exports = async (req, res) => {
     }
     
     if (!b64) {
+      console.log('No image data found in any part');
       return res.status(500).json({ 
         error: 'No image data found in API response' 
       });

@@ -1,10 +1,10 @@
 // Configuration for Image Remix AI Extension
 const CONFIG = {
-  // Server URL - change this to your production server URL
-  SERVER_URL: 'http://localhost:3000',
+  // Server URL - Vercel production API
+  SERVER_URL: 'https://image-remix-ai.vercel.app',
   
   // Development mode flag
-  DEV_MODE: true,
+  DEV_MODE: false,
   
   // API endpoints
   ENDPOINTS: {

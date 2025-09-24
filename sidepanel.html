@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Remix'em</title>
-  <link rel="stylesheet" href="popup.css" />
+  <title>Remix'em - Side Panel</title>
+  <link rel="stylesheet" href="sidepanel.css" />
 </head>
 <body>
   <div class="container">
@@ -13,10 +13,18 @@
       <div id="status" class="status"></div>
     </div>
 
+    <div id="selectedImageContainer" class="selected-image-container" style="display: none;">
+      <div class="selected-image-header">
+        <span>🖼️ Selected Image:</span>
+        <button id="clearImageBtn" class="clear-btn">×</button>
+      </div>
+      <img id="selectedImage" class="selected-image" alt="Selected image" />
+    </div>
+
     <div id="chatContainer" class="chat-container">
       <div id="noImageMessage" class="message system-message">
         <div class="message-content">
-          <p>✨ Welcome to Remix'em! 🎨<br>Hover over any image on the page and click "Remix" to start creating amazing AI-powered image transformations! 🚀</p>
+          <p>✨ Welcome to Remix'em! 🎨<br>Right-click on any image and select "Open Remix'em" to start creating amazing AI-powered image transformations! 🚀</p>
         </div>
       </div>
     </div>
@@ -29,6 +37,6 @@
     </div>
   </div>
 
-  <script src="popup.js"></script>
+  <script src="sidepanel.js"></script>
 </body>
 </html>

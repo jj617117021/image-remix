@@ -70,7 +70,7 @@ app.post('/api/generate-image', validateRequest, async (req, res) => {
     
     // Get the model
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.0-flash-exp" // Updated to latest model
+      model: "models/gemini-2.5-flash-image-preview" // Correct image generation model
     });
     
     // Build conversation context

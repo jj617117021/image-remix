@@ -2,6 +2,37 @@
 (() => {
     const BUTTON_CLASS = 'image-remix-cta-btn';
     const STYLE_ID = 'image-remix-cta-style-v1';
+    
+    // Helper function to safely send messages to background script
+    function sendMessageToBackground(message, callback) {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+        try {
+          chrome.runtime.sendMessage(message, callback);
+        } catch (error) {
+          console.error('Error sending message to background:', error);
+          if (callback) callback({ error: 'Failed to send message' });
+        }
+      } else {
+        console.error('Chrome runtime not available');
+        if (callback) callback({ error: 'Chrome runtime not available' });
+      }
+    }
+    
+    // Wait for Chrome APIs to be available
+    function waitForChromeAPI(callback, maxAttempts = 10) {
+      let attempts = 0;
+      const checkAPI = () => {
+        attempts++;
+        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+          callback();
+        } else if (attempts < maxAttempts) {
+          setTimeout(checkAPI, 100);
+        } else {
+          console.error('Chrome API not available after maximum attempts');
+        }
+      };
+      checkAPI();
+    }
   
     // add styles once
     if (!document.getElementById(STYLE_ID)) {
@@ -96,29 +127,36 @@
       evt.stopPropagation();
       evt.preventDefault();
       if (!currentImg) return;
+      
       // send message to service worker to store selected image and open popup
       const payload = { src: currentImg.src, alt: currentImg.alt || '' };
-      chrome.runtime.sendMessage({ type: 'image-selected', payload }, (resp) => {
+      sendMessageToBackground({ type: 'image-selected', payload }, (resp) => {
         // service worker may respond
         // openPopup is invoked by service worker; optional further action here
+        if (resp && resp.error) {
+          console.error('Background script error:', resp.error);
+        }
       });
       hideButton(currentButton);
     });
   
-    // initial scan
-    scanAndAttach();
-  
-    // observe DOM for new images (simple)
-    const mo = new MutationObserver((mutations) => {
-      for (const m of mutations) {
-        m.addedNodes?.forEach(node => {
-          if (node.nodeType === 1) {
-            if (node.tagName === 'IMG') attachToImage(node);
-            else node.querySelectorAll && node.querySelectorAll('img').forEach(attachToImage);
-          }
-        });
-      }
+    // Initialize after Chrome API is available
+    waitForChromeAPI(() => {
+      // initial scan
+      scanAndAttach();
+    
+      // observe DOM for new images (simple)
+      const mo = new MutationObserver((mutations) => {
+        for (const m of mutations) {
+          m.addedNodes?.forEach(node => {
+            if (node.nodeType === 1) {
+              if (node.tagName === 'IMG') attachToImage(node);
+              else node.querySelectorAll && node.querySelectorAll('img').forEach(attachToImage);
+            }
+          });
+        }
+      });
+      mo.observe(document.body, { childList: true, subtree: true });
     });
-    mo.observe(document.body, { childList: true, subtree: true });
   })();
   
